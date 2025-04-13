@@ -17,13 +17,13 @@ model Clinic {
 }
 
 model ClinicRoom {
-  id          Int           @id @default(autoincrement())
-  roomName    String
-  roomNo      Int
-  clinicId    Int
-  clinic      Clinic        @relation(fields: [clinicId], references: [id])
-  createdAt   DateTime      @default(now())
-  RoomFeature RoomFeature[]
+  id        Int           @id @default(autoincrement())
+  roomName  String
+  roomNo    Int
+  clinicId  Int
+  clinic    Clinic        @relation(fields: [clinicId], references: [id])
+  createdAt DateTime      @default(now())
+  features  RoomFeature[]
 }
 
 model Appointment {

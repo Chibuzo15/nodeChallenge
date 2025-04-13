@@ -133,4 +133,55 @@ router.get("/:clinicId/rooms/:roomId/features", async (req, res) => {
   }
 });
 
+//GET: get clinic summary by clinic id
+router.get("/:clinicId/summary", async (req, res) => {
+  const clinicId = Number(req.params.clinicId);
+
+  try {
+    // Get the clinic with all related data
+    const clinic = await prisma.clinic.findUnique({
+      where: {
+        id: clinicId,
+      },
+      include: {
+        rooms: {
+          include: {
+            features: true,
+          },
+        },
+      },
+    });
+
+    if (!clinic) {
+      return res.status(404).json({ error: "Clinic not found" });
+    }
+
+    // Calculate total feature count
+    let totalFeatures = 0;
+    const featuresMap = {};
+
+    // Build the features object grouped by room name
+    clinic.rooms.forEach((room) => {
+      totalFeatures += room.features.length;
+
+      featuresMap[room.roomName] = room.features.map(
+        (feature) => feature.featureName
+      );
+    });
+
+    // Build the summary response
+    const summary = {
+      clinicName: clinic.name,
+      roomCount: clinic.rooms.length,
+      featureCount: totalFeatures,
+      features: featuresMap,
+    };
+
+    res.json(summary);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to generate clinic summary" });
+  }
+});
+
 module.exports = router;
