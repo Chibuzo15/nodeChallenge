@@ -60,19 +60,18 @@ router.get("/:id/stats", async (req, res) => {
   });
 });
 
-// Create room feature for a room
+// POST: Create room feature for a room
 router.post("/:clinicId/rooms/:roomId/features", async (req, res) => {
   const clinicId = Number(req.params.clinicId);
   const roomId = Number(req.params.roomId);
   const { featureName } = req.body;
 
-  // Validate required fields
   if (!featureName) {
     return res.status(400).json({ error: "featureName is required" });
   }
 
   try {
-    // First, verify the room exists and belongs to the specified clinic
+    // Verify the room exists and belongs to the specified clinic
     const room = await prisma.clinicRoom.findFirst({
       where: {
         id: roomId,
@@ -96,6 +95,41 @@ router.post("/:clinicId/rooms/:roomId/features", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create room feature" });
+  }
+});
+
+//GET: get all room features by clinic id and clinicRoom id
+router.get("/:clinicId/rooms/:roomId/features", async (req, res) => {
+  const clinicId = Number(req.params.clinicId);
+  const roomId = Number(req.params.roomId);
+
+  try {
+    const room = await prisma.clinicRoom.findFirst({
+      where: {
+        id: roomId,
+        clinicId: clinicId,
+      },
+    });
+
+    if (!room) {
+      return res.status(404).json({ error: "Room not found in this clinic" });
+    }
+
+    // Get all features for this room
+    const features = await prisma.roomFeature.findMany({
+      where: {
+        roomId,
+      },
+      select: {
+        featureName: true,
+        createdAt: true,
+      },
+    });
+
+    res.json(features);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch room features" });
   }
 });
 
