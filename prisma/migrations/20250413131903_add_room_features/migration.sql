@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "RoomFeature" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "featureName" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "roomId" INTEGER NOT NULL,
+    CONSTRAINT "RoomFeature_roomId_fkey" FOREIGN KEY ("roomId") REFERENCES "ClinicRoom" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
