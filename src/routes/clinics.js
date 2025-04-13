@@ -60,4 +60,43 @@ router.get("/:id/stats", async (req, res) => {
   });
 });
 
+// Create room feature for a room
+router.post("/:clinicId/rooms/:roomId/features", async (req, res) => {
+  const clinicId = Number(req.params.clinicId);
+  const roomId = Number(req.params.roomId);
+  const { featureName } = req.body;
+
+  // Validate required fields
+  if (!featureName) {
+    return res.status(400).json({ error: "featureName is required" });
+  }
+
+  try {
+    // First, verify the room exists and belongs to the specified clinic
+    const room = await prisma.clinicRoom.findFirst({
+      where: {
+        id: roomId,
+        clinicId: clinicId,
+      },
+    });
+
+    if (!room) {
+      return res.status(404).json({ error: "Room not found in this clinic" });
+    }
+
+    // Create the feature
+    const feature = await prisma.roomFeature.create({
+      data: {
+        featureName,
+        roomId,
+      },
+    });
+
+    res.status(201).json(feature);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create room feature" });
+  }
+});
+
 module.exports = router;
